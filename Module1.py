@@ -136,6 +136,10 @@ def get_rates(data_file, source, field_list_zh = None):
     output_df[cols].to_csv('识别_误伤.csv')
     return output_df[cols]
 
-get_coverage_plot(sys.argv[1], sys.argv[2], sys.argv[3:])
-#get_plot(sys.argv[1], sys.argv[2], sys.argv[3:])
-get_rates(sys.argv[1], sys.argv[2], sys.argv[3:])
+
+if len(sys.argv) == 3:
+    get_coverage_plot(sys.argv[1], sys.argv[2])
+    get_rates(sys.argv[1], sys.argv[2])
+else:
+    get_coverage_plot(sys.argv[1], sys.argv[2], sys.argv[3:])
+    get_rates(sys.argv[1], sys.argv[2], sys.argv[3:])
