@@ -15,8 +15,16 @@ plt.rcParams['axes.unicode_minus']=False #用来正常显示负号
 from scipy import stats
 plt.style.use('ggplot')
 
-#绘图
-def get_coverage(data_file, source, field_list_zh = None):
+#制表/绘图
+def get_plot(output, title):
+    fig, ax = plt.subplots(figsize = (8, output.shape[0] * 0.8))
+    sns.barplot(y = '数据名称', x = '覆盖率(%)', data = output, color = 'blue', alpha = 0.5, ax = ax)
+    ax.set_xlabel('覆盖率(%)')
+    ax.set_title(title)
+    fig.tight_layout()
+    pylab.savefig('覆盖率.png')
+
+def get_coverage_plot(data_file, source, field_list_zh = None):
     #检查文件格式是否为csv或xlsx
     if data_file.endswith('.csv'):
         df = pd.read_csv(data_file)
@@ -40,25 +48,15 @@ def get_coverage(data_file, source, field_list_zh = None):
     if field_list_zh == None:
         cols = ['产品名称', '数据名称', '覆盖率(%)']
         output_df = pd.DataFrame({'产品名称':source, '数据名称':field_list, '覆盖率(%)':coverage_rates})
+        output_df[cols].to_csv('覆盖率.csv')
+        get_plot(output_df[cols], source)
+        return output_df[cols]
     else:
         cols = ['产品名称', '数据名称', '含义', '覆盖率(%)']
         output_df = pd.DataFrame({'产品名称':source, '数据名称':field_list, '含义':field_list_zh, '覆盖率(%)':coverage_rates})
-    #输出表格
-    output_df[cols].to_csv('覆盖率.csv')
-    return output_df[cols]
-
-#根据上一步结果绘图
-def get_plot(data_file, title, field_list_zh = None):
-    output_list = get_coverage(data_file, title)
-    fig, ax = plt.subplots(figsize = (8, output_list.shape[0] * 0.8))
-    if field_list_zh == None:
-        sns.barplot(y = '数据名称', x = '覆盖率(%)', data = output_list, color = 'blue', alpha = 0.5, ax = ax)
-    else:
-        sns.barplot(y = '含义', x = '覆盖率(%)', data = output_list, color = 'blue', alpha = 0.5, ax = ax)
-    ax.set_xlabel('覆盖率(%)')
-    ax.set_title(title)
-    fig.tight_layout()
-    pylab.savefig('覆盖率.png')
+        output_df[cols].to_csv('覆盖率.csv')
+        get_plot(output_df[cols], source)
+        return output_df[cols]
 
 ###辅助函数
 #根据flag分割数据
@@ -138,6 +136,6 @@ def get_rates(data_file, source, field_list_zh = None):
     output_df[cols].to_csv('识别_误伤.csv')
     return output_df[cols]
 
-get_coverage(sys.argv[1], sys.argv[2], sys.argv[3:])
-get_plot(sys.argv[1], sys.argv[2])
-get_rates(sys.argv[1], sys.argv[2])
+get_coverage_plot(sys.argv[1], sys.argv[2], sys.argv[3:])
+#get_plot(sys.argv[1], sys.argv[2], sys.argv[3:])
+get_rates(sys.argv[1], sys.argv[2], sys.argv[3:])
