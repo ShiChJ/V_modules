@@ -73,12 +73,10 @@ def get_seperate_point(xy1, xy2):
     df1 = pd.DataFrame(xy1)
     #坏客户
     df2 = pd.DataFrame(xy2)
-
-
     # print("sepation good: {}".format(df1.ix[seperation, 0]))
     # print("sepation bad: {}".format(df2.ix[seperation, 0]))
-    print(df1)
-    print(df2)
+    # print(df1)
+    # print(df2)
     if df1[0].min() >= df2[0].max():
         return (df1[0].min(), '>:good')
     if df1[0].max() < df2[0].min():
@@ -134,7 +132,7 @@ def get_rates(data_file, source, field_list_zh = None):
             xy2 = ax.get_children()[0].xy
             #计算分割点
             seperation, condition = get_seperate_point(xy1, xy2)
-            print(seperation)
+            #print(seperation)
             df_new = df_c
             #计算预测标签
             if condition == '>:good':
