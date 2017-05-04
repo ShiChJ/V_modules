@@ -69,9 +69,25 @@ def compute_ks_value(lst_1, lst_2):
 
 #计算连续字段的好坏划分阈值
 def get_seperate_point(xy1, xy2):
+    #好客户
     df1 = pd.DataFrame(xy1)
+    #坏客户
     df2 = pd.DataFrame(xy2)
-    return round(df1.ix[(df1[1] - df2[1]).apply(lambda x: abs(x)).argmax()][0], 0)
+
+
+    # print("sepation good: {}".format(df1.ix[seperation, 0]))
+    # print("sepation bad: {}".format(df2.ix[seperation, 0]))
+    print(df1)
+    print(df2)
+    if df1[0].min() >= df2[0].max():
+        return (df1[0].min(), '>:good')
+    if df1[0].max() < df2[0].min():
+        return (df1[0].max(), '<:good')
+    seperation = round(df1.ix[(df1[1] - df2[1]).apply(lambda x: abs(x)).argmax()][0], 0)
+    if df1.ix[seperation, 0] > df2.ix[seperation, 0]:
+        return (seperation, '>:good')
+    if df1.ix[seperation, 0] <= df2.ix[seperation, 0]:
+        return (seperation, '<:good')
 ###
 
 def get_rates(data_file, source, field_list_zh = None):
@@ -93,9 +109,9 @@ def get_rates(data_file, source, field_list_zh = None):
         #如果该字段只有两个唯一值，即为0/1变量
         if len(df_c[field].unique()) <= 2:
             #计算识别率
-            recog_rates.append(round(sum((df_c[field] == 1) & (df_c[label] == 1)) * 1.0 / sum(df_c[label] == 1) * 100, 2))
+            recog_rates.append(round(sum((df_c[field] == 0) & (df_c[label] == 0)) * 1.0 / sum(df_c[label] == 0) * 100, 2))
             #计算误伤率
-            injure_rates.append(round(sum((df_c[field] == 1) & (df_c[label] == 0)) * 1.0 / sum(df_c[label] == 0) * 100, 2))
+            injure_rates.append(round(sum((df_c[field] == 0) & (df_c[label] == 1)) * 1.0 / sum(df_c[label] == 1) * 100, 2))
             #不计算KS值，添加空值
             ks_values.append(np.nan)
         else:
@@ -113,14 +129,18 @@ def get_rates(data_file, source, field_list_zh = None):
             ax.set_ylabel('累计百分比')
             ax.set_title('累计分布曲线')
             #得到好客户曲线的X,Y值
-            xy1 = ax.get_children()[0].xy
+            xy1 = ax.get_children()[1].xy
             #得到坏客户曲线的X,Y值
-            xy2 = ax.get_children()[1].xy
+            xy2 = ax.get_children()[0].xy
             #计算分割点
-            seperation = get_seperate_point(xy1, xy2)
+            seperation, condition = get_seperate_point(xy1, xy2)
+            print(seperation)
             df_new = df_c
             #计算预测标签
-            df_new['predict'] = df_new[field] >= seperation
+            if condition == '>:good':
+                df_new['predict'] = df_new[field] > seperation
+            else:
+                df_new['predict'] = df_new[field] < seperation
             #计算识别率和误伤率
             recog_rates.append(round(sum((df_new['predict'] == 0) & (df_new[label] == 0)) * 1.0 / sum(df_new[label] == 0) * 100, 2))
             injure_rates.append(round(sum((df_new['predict'] == 0) & (df_new[label] == 1)) * 1.0 / sum(df_new[label] == 1) * 100, 2))
