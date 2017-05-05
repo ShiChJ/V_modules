@@ -90,6 +90,7 @@ def plot_CDF(df, threshold = 0.0005):
     xy2 = ax.get_children()[1].xy
     separation, condition = get_separate_point(xy1, xy2)
     min_injure_num = int(round(good_part.shape[0] * threshold, 0))
+    new_separation = 0
     if condition == '>:good':
         new_separation = good_part.sort_values(metric)[metric].iloc[min_injure_num]
     else:
@@ -146,15 +147,15 @@ else:
 
 metric = df.columns[1]
 flag = df.columns[2]
+threshold = 0.0005
+if len(sys.argv) == 3:
+    threshold = float(sys.argv[2])
+
 if len(df[metric].unique()) > 2:
     plot_PDF(df)
-    separation, condition = plot_CDF(df)
+    separation, condition = plot_CDF(df, threshold)
     out1 = compute_metrics(df, separation, condition)
-    out2 = None
-    if len(sys.argv) == 3:
-        out2 = compute_metrics_threshold(df, condition, float(sys.argv[2]))
-    else:
-        out2 = compute_metrics_threshold(df, condition)
+    out2 = compute_metrics_threshold(df, condition)
     output = pd.concat([out1, out2])
     output.to_csv('output.csv')
 else:
